@@ -1,0 +1,29 @@
+# Visual Studio / VS Code
+.vs/
+.vscode/
+
+# Build outputs
+**/bin/
+**/obj/
+**/publish/
+publish/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# App config (contains credentials)
+**/dbconfig.json
