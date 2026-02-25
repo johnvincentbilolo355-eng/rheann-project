@@ -27,3 +27,7 @@ Thumbs.db
 
 # App config (contains credentials)
 **/dbconfig.json
+
+# SMTP config (contains credentials)
+**/smtpconfig.json
+**/emailconfig.json

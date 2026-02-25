@@ -118,18 +118,7 @@ namespace An_Early_Warning_System_for_Student
         {
             try
             {
-                MailMessage mail = new MailMessage();
-                mail.From = new MailAddress("seepathearlywarningsystem@gmail.com"); // PALITAN MO
-                mail.To.Add(toEmail);
-                mail.Subject = "Your OTP Code - Early Warning System";
-                mail.Body = "Your OTP code is: " + otp + "\n\nThis code will expire in 5 minutes.";
-
-                SmtpClient smtp = new SmtpClient("smtp.gmail.com");
-                smtp.Port = 587;
-                smtp.Credentials = new NetworkCredential("seepathearlywarningsystem@gmail.com", "piov robn nnas ehim");
-                smtp.EnableSsl = true;
-
-                smtp.Send(mail);
+                OtpEmailService.SendOtp(toEmail, otp);
             }
             catch (Exception ex)
             {
