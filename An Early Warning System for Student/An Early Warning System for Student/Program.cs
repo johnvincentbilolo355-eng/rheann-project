@@ -27,6 +27,12 @@ namespace An_Early_Warning_System_for_Student
                             name == nameof(OTPVerification) ||
                             name == nameof(AdminOTPVerification);
 
+                        // Forms that use fixed, designer-positioned controls.
+                        // ResponsiveLayout scaling can cause overlaps on these forms.
+                        bool isFixedLayout =
+                            isLoginOrOtp ||
+                            name == nameof(Registration);
+
                         bool isShellForm =
                             name == nameof(Form1) ||
                             name == nameof(MainPage) ||
@@ -34,14 +40,14 @@ namespace An_Early_Warning_System_for_Student
                             name == nameof(Guidance);
 
                         // Don't scale login / OTP windows; keep their designed layout.
-                        if (!isLoginOrOtp)
+                        if (!isFixedLayout)
                             ResponsiveLayout.Attach(form);
 
                         // Only auto-maximize the main desktop shells.
                         // Login / OTP forms should keep their designed size.
                         if (form.TopLevel && form.WindowState == FormWindowState.Normal)
                         {
-                            if (!isLoginOrOtp && isShellForm)
+                            if (!isFixedLayout && isShellForm)
                                 form.WindowState = FormWindowState.Maximized;
                         }
 
