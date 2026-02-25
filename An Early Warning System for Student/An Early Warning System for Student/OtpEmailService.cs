@@ -63,9 +63,16 @@ namespace An_Early_Warning_System_for_Student
             if (!string.IsNullOrWhiteSpace(cfg.User) && !string.IsNullOrWhiteSpace(cfg.Password))
                 return cfg;
 
-            // 2) Local JSON config next to the .exe (ignored by git)
-            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "smtpconfig.json");
-            if (File.Exists(configPath))
+            // 2) Local JSON config (ignored by git)
+            // Prefer next to the .exe, but also check the current working directory.
+            var baseDirConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "smtpconfig.json");
+            var cwdConfigPath = Path.Combine(Environment.CurrentDirectory, "smtpconfig.json");
+
+            var configPath = File.Exists(baseDirConfigPath)
+                ? baseDirConfigPath
+                : (File.Exists(cwdConfigPath) ? cwdConfigPath : null);
+
+            if (configPath != null)
             {
                 var json = File.ReadAllText(configPath);
                 var fileCfg = JsonSerializer.Deserialize<SmtpConfig>(json, new JsonSerializerOptions
@@ -85,8 +92,48 @@ namespace An_Early_Warning_System_for_Student
                 }
             }
 
-            throw new InvalidOperationException(
-                "SMTP is not configured. Set SEEPATH_SMTP_USER and SEEPATH_SMTP_PASSWORD, or create smtpconfig.json next to the application. See smtpconfig.example.json for the format.");
+            // If no config found, try to create a template next to the app.
+            // This makes setup easier for non-dev users.
+            TryWriteTemplate(baseDirConfigPath);
+
+            var message =
+                "SMTP is not configured for OTP emails.\n\n" +
+                "Fix options:\n" +
+                "1) Create smtpconfig.json next to the app\n" +
+                "   Path: " + baseDirConfigPath + "\n" +
+                "2) OR set environment variables:\n" +
+                "   SEEPATH_SMTP_USER and SEEPATH_SMTP_PASSWORD\n\n" +
+                "Notes for Gmail:\n" +
+                "- Use a Gmail App Password (requires 2-Step Verification).\n" +
+                "- App passwords are often copied with spaces; spaces are ignored.";
+
+            throw new InvalidOperationException(message);
+        }
+
+        private static void TryWriteTemplate(string configPath)
+        {
+            try
+            {
+                if (File.Exists(configPath))
+                    return;
+
+                var template = new SmtpConfig
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    User = "seepathearlywarningsystem@gmail.com",
+                    Password = "PASTE_YOUR_GMAIL_APP_PASSWORD_HERE"
+                };
+
+                var json = JsonSerializer.Serialize(template, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(configPath, json);
+            }
+            catch
+            {
+                // Best-effort only. If we cannot write the file (permissions),
+                // the exception message still tells the user what to do.
+            }
         }
 
         private static string NormalizePassword(string? password)
